@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t my-gpu-service .'
+            }
+        }
+
+        stage('Run on GPU server') {
+            steps {
+                sh '''
+                    docker rm -f gpu_service || true
+                    docker run -d --gpus all -p 8000:8000 --name gpu_service my-gpu-service
+                '''
+            }
+        }
+    }
+}
